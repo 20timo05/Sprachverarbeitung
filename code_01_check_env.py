@@ -28,4 +28,4 @@ except Exception as e:
 # A very basic Streamlit check (requires running the app separately)
 # This part is just to show Streamlit is imported
 # A full Streamlit app would be `streamlit run your_app.py`
-print("Streamlit imported successfully. You can try 'streamlit run check_env.py' after adding 'st.write(\"Hello Streamlit!\")' in a function.")
+print("Streamlit imported successfully. You can try 'streamlit run check_env.py' after adding 'st.write(\"Hello Streamlit!\")' in a function.")^
