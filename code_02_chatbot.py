@@ -12,6 +12,7 @@ import pyttsx3
 import io # Used to handle the audio file in memory
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
+import re
 
 # Helper function to extract features (must be consistent with training)
 def extract_features(words):
@@ -117,15 +118,45 @@ def text_to_audio_for_web(text):
 
 
 # --- 3. Assistant Core Logic ---
+def analyze_intent(prompt):
+    """ Analyzes the prompt for intent. The following intents are possible: get_weather, greet, name_input, email_input"""
+
+    # Greeting slot filling - must be case-sensitive and have quoted characters if necessary
+    greet_pattern = re.compile(r'.*(Good Morning|Hello there|What\'s up).*')
+    if greet_pattern.match(prompt):
+        return "greet"
+
+    # Name slot filling - starts with "my name is", last 2 words are first and last name
+    name_pattern = re.compile(r'^my name is\s+(\b\w+)\s+(\b\w+)\s*$', re.IGNORECASE)
+    name_match = name_pattern.match(prompt)
+    if name_match:
+        firstname, lastname = name_match.groups()
+        st.session_state['firstname'] = firstname
+        st.session_state['lastname'] = lastname
+        return "name_input"
+        
+    # Email slot filling - simply the address
+    email_pattern = re.compile(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$')
+    email_match = email_pattern.match(prompt.strip())
+    if email_match:
+        st.session_state['email'] = email_match.group(0)
+        return "email_input"
+
+    return "get_weather"
 
 def assistant_action(intent):
     """Maps the recognized intent to a specific action/response."""
+    
+    fname = st.session_state.get('firstname', '')
+    
     actions = {
         "get_weather": "I'm checking the forecast for your location now. Expect sunny skies!",
         "control_lights": "Acknowledged. The requested light controls have been executed.",
         "set_timer": "Starting a timer. I'll let you know when time is up!",
         "tell_joke": "What do you call a fake noodle? An impasta!",
-        "greet": "Hello! I am your AI assistant. How can I help you today?",
+        "greet": "Hello! I am your AI assistant. What is your name?",
+        "name_input": f"Thx {fname} ... What is your E-Mail?".strip(),
+        "email_input": f"Got it! Email {st.session_state.get('email', '')} saved. How else can I help?"
     }
     return actions.get(intent, "I'm sorry, I don't know how to handle that request yet. Try asking me about the weather or a joke.")
 
@@ -162,7 +193,7 @@ def handle_prompt(prompt, image_html=None):
             st.markdown(image_html, unsafe_allow_html=True)
 
     # 2. Recognize Intent and Generate Response
-    intent = "greet"
+    intent = analyze_intent(prompt) or "greet"
     response_text = assistant_action(intent)
     
     # 3. Generate TTS Audio
