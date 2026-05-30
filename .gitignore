@@ -1,3 +1,4 @@
 venv/
 *.crdownload
 speech_commands_v0.02/
+static/
