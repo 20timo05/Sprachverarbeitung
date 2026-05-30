@@ -2,3 +2,8 @@ venv/
 *.crdownload
 speech_commands_v0.02/
 static/
+.antigravity/
+.streamlit/
+.agents/
+midterm2/*.txt
+midterm2/*.xml
